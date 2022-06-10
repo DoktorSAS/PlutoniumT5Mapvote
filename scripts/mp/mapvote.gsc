@@ -12,9 +12,9 @@ init()
     game["mapvote"] = "mapvote";
     preCacheMenu(game["mapvote"]);
 
-    //SetDvarIfNotInizialized("mv_enable", 1);
-    //if(!getDvarInt("mv_enable"))
-    //    return;
+    SetDvarIfNotInizialized("mv_enable", 1);
+    if(!getDvarInt("mv_enable"))
+        return;
     print("Mapvote loaded...");
     print("Developed by @DoktorSAS");
 
