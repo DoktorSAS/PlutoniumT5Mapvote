@@ -12,9 +12,9 @@ init()
     game["mapvote"] = "mapvote";
     preCacheMenu(game["mapvote"]);
 
-    SetDvarIfNotInizialized("mv_enable", 1);
-    if(!getDvarInt("mv_enable"))
-        return;
+    //SetDvarIfNotInizialized("mv_enable", 1);
+    //if(!getDvarInt("mv_enable"))
+    //    return;
     print("Mapvote loaded...");
     print("Developed by @DoktorSAS");
 
@@ -28,8 +28,8 @@ init()
     // DLC ONLY
     //SetDvarIfNotInizialized("mv_maps", "mp_berlinwall2 mp_discovery mp_kowloon mp_stadium mp_gridlock mp_hotel mp_outskirts mp_zoo mp_drivein mp_area51 mp_golfcourse mp_silo");
     
-    SetDvarIfNotInizialized("mv_gametypefiles", "TDM_default@FFA_default@SD_default@GG_default");
-    SetDvarIfNotInizialized("mv_gametypenames", "Team Deathmatch@Free for all@Search & Destroy@Gungame");
+    SetDvarIfNotInizialized("mv_gametypefiles", "dm@sd@tdm");
+    SetDvarIfNotInizialized("mv_gametypes", "dm@sd@tdm");
     SetDvarIfNotInizialized("mv_randomgametypeenable", 1);
 
     SetDvarIfNotInizialized("map1", "none");
@@ -67,9 +67,6 @@ init()
 
 mapvote()
 {
-    //level.onEndGameOriginal = level.onEndGame;
-    //level.onEndGame = ::endgame;
-
     // Choose random maps from the array
     maps = [];
     maps = strTok( getDvar("mv_maps"), " ");
@@ -105,47 +102,57 @@ mapvote()
 
     thread managevotes(); // Manage votes of each map on screen 
     thread managetime(); // Manage timer on screen
+    gametypes = [];
     gametypes = managegametypenames(); // Manage gametype on screen
 
     level waittill("mapvote_done", winner);
-    if( !level.istimeexpired )
-        wait 5;
 
-    dsr = "";
+    execute = "";
     if( gametypes.size > 0)
     {
+        gametypeslist = strTok(getDvar("mv_gametypes"), "@");
         gametypefiles = strTok(getDvar("mv_gametypefiles"), "@");
-        dsr = "dsr " + gametypefiles[ gametypes[int(winner)] ];
+        
+        setDvar("g_gametype", gametypeslist[winner]);
+        if(gametypefiles[winner] != "")
+            execute = "exec " + gametypefiles[winner] + ".cfg";
     }
-    setDvar("sv_maprotation", "map " + mapimgtomapid( getDvar("map" + winner) ) );
-    setDvar("sv_maprotationcurrent", "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    setDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    setDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    if( !level.istimeexpired )
+        wait 5;
 }
 
 managegametypenames()
 {
     level endon("game_ended");
     level endon("mapvote_done");
-    setDvar("mv_randomgametypeenable", getDvar("mv_randomgametypeenable") );
     if(getDvarInt("mv_randomgametypeenable") == 0)
         return [];
 
-    gametypesnames = strTok(getDvar("mv_gametypenames"), "@");
+    gametypeslist = strTok(getDvar("mv_gametypes"), "@");
 
     gametypes = [];
-    gametypes[0] = "unknown";
+    gametypes[0] = -1;
 
-    gametypes[1] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype1", gametypesnames[ gametypes[1] ] );
-    gametypes[2] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype2", gametypesnames[ gametypes[2] ] );
-    gametypes[3] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype3", gametypesnames[ gametypes[3] ] );
-    gametypes[4] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype4", gametypesnames[ gametypes[4] ] );
-    gametypes[5] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype5", gametypesnames[ gametypes[5] ] );
-    gametypes[6] = randomIntRange(0, gametypesnames.size);
-    setDvar("mapgametype6", gametypesnames[ gametypes[6] ] );
+    gametypes[1] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid1", gametypeslist[ gametypes[1] ] );
+    setDvar("mapgametype1", gametypeToName( gametypeslist[ gametypes[1] ] ) );
+    gametypes[2] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid2", gametypeslist[ gametypes[2] ] );
+    setDvar("mapgametype2", gametypeToName( gametypeslist[ gametypes[2] ] ) );
+    gametypes[3] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid3", gametypeslist[ gametypes[3] ] );
+    setDvar("mapgametype3", gametypeToName( gametypeslist[ gametypes[3] ] ) );
+    gametypes[4] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid4", gametypeslist[ gametypes[4] ] );
+    setDvar("mapgametype4", gametypeToName( gametypeslist[ gametypes[4] ] ) );
+    gametypes[5] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid5", gametypeslist[ gametypes[5] ] );
+    setDvar("mapgametype5", gametypeToName( gametypeslist[ gametypes[5] ] ) );
+    gametypes[6] = randomIntRange(0, gametypeslist.size);
+    //setDvar("mapgametypeid6", gametypeslist[ gametypes[6] ] );
+    setDvar("mapgametype6", gametypeToName( gametypeslist[ gametypes[6] ] ) );
 
     return gametypes;
 
@@ -385,6 +392,7 @@ mapvoteEndGame( winner, endReasonText )
     
     SetMatchTalkFlag( "EveryoneHearsEveryone", 1 );
     
+    wait 2;
     mapvote();
     
     players = level.players;
