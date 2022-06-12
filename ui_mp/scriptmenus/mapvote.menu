@@ -1,0 +1,453 @@
+#include "ui/menudef.h"
+#include "ui/framestyle.inc"
+#include "ui_mp/common_macro.inc"
+#include "ui_mp/choices_setup_teams.menu"
+#include "ui_mp/menustyle.inc"
+#include "ui_mp/newframe.inc"
+#include "ui_mp/popupstyle.inc"
+#include "ui/choices_setup_popmenu.menu"
+
+#define START_X 0
+#define START_Y 0
+#define COLUMN_WIDTH 250
+#define ROW_HEIGHT 17
+
+#define GENERIC_RECT 0 0 COLUMN_WIDTH ROW_HEIGHT HORIZONTAL_ALIGN_FULLSCREEN VERTICAL_ALIGN_FULLSCREEN
+
+#define DRAW_TEXT(ptext, porigin, psize, pcolor) \
+	PREPROC_TEXT_DRAW_VIS( GENERIC_RECT, porigin, ptext, psize, 0, 0, ITEM_ALIGN_TOP_CENTER, pcolor, 1 ) \
+
+#undef	CHOICE_SIZE_X
+#define CHOICE_SIZE_X					200
+
+#define BACKGROUND_COLOR_GRAY_RGB		0.62 0.70 0.70
+
+#ifdef PC	
+	#undef  CHOICE_X_START
+	#define CHOICE_X_START				30
+	#undef  CHOICE_Y_START
+	#define CHOICE_Y_START				-60
+	#define CHOICE_SEP_1				5
+#else
+	#undef  CHOICE_X_START
+	#define CHOICE_X_START				30
+	#undef  CHOICE_Y_START
+	#define CHOICE_Y_START				-30
+	#define CHOICE_SEP_1				3
+#endif
+
+#ifdef CONSOLE
+	#define CUSTOM_MATCH					( dvarbool( systemlink ) || dvarbool( xblive_privatematch ) )
+	#define NOT_CUSTOM_MATCH				( !dvarbool( systemlink ) && !dvarbool( xblive_privatematch ) )
+	#define RANKEDGAME						(dvarBool( onlinegame ) && !dvarBool( xblive_privatematch ))
+	#define ISHOST							(dvarBool( sv_running ))
+	#define TEAMGAME						( team( name ) != "TEAM_FREE")
+	#define NOTTEAMGAME						( team( name ) == "TEAM_FREE" )
+	#define ALLOW_VOTE						( !dvarbool( xblive_basictraining ) && !dvarbool( xblive_wagermatch ) && dvarbool( ui_allowvote ) )
+	#define IN_PREGAME						( dvarbool( ui_pregame ) )
+#else
+	#define CUSTOM_MATCH					( dvarbool( systemlink ) || dvarbool( xblive_privatematch ) )
+	#define NOT_CUSTOM_MATCH				( !dvarbool( systemlink ) && !dvarbool( xblive_privatematch ) )
+	#define RANKEDGAME						( dvarbool( ui_ranked ) )
+	#define ISHOST							( dvarBool( sv_running ) )
+	#define TEAMGAME						( team( name ) != "TEAM_FREE")
+	#define NOTTEAMGAME						( team( name ) == "TEAM_FREE" )
+	#define ALLOW_VOTE						( !dvarbool( xblive_basictraining ) && !dvarbool( xblive_wagermatch ) && dvarbool( ui_allowvote ) )
+	#define IN_PREGAME						( dvarbool( ui_pregame ) )
+#endif
+
+#define MAPNAME tableLookup( "mp/mapstable.csv", 0, dvarString( mapname ), 3 )
+// ------------------ preprocessing function definitions ------------------
+#define PAD_LEFT					\
+		execKeyInt DPAD_LEFT		\
+		{							\
+			focusFirst;				\
+			show selection_left;	\
+			hide selection_right;	\
+		}							\
+		execKeyInt APAD_LEFT		\
+		{							\
+			focusFirst;				\
+			show selection_left;	\
+			hide selection_right;	\
+		} 
+
+#undef	CHOICE_FOCUS_SOUND
+#define CHOICE_FOCUS_SOUND				"uin_navigation_over"
+
+#undef	CHOICE_GROUP
+#define CHOICE_GROUP					"class"
+
+#undef	CHOICE_HORIZONTAL_ALIGN
+#define CHOICE_HORIZONTAL_ALIGN			HORIZONTAL_ALIGN_LEFT
+
+#undef	CHOICE_VERTICAL_ALIGN
+#define CHOICE_VERTICAL_ALIGN			VERTICAL_ALIGN_CENTER
+
+#undef	BUTTON_BG_X_START
+#define BUTTON_BG_X_START				30
+#undef	BUTTON_BG_Y_START	
+#define	BUTTON_BG_Y_START				42
+
+#undef	CHOICE_TEXTSTYLE
+#define	CHOICE_TEXTSTYLE				ITEM_TEXTSTYLE_NORMAL
+
+#define MAP_BACKGROUND_WIDTH			229
+#define MAP_BACKGROUND_HEIGHT			228
+
+#ifdef CONSOLE
+#define MAP_BG_Y_START					-110
+#else // #ifdef CONSOLE
+#define MAP_BG_Y_START					-120
+#endif // #else #ifdef CONSOLE
+
+#define	MAP_BG_X_START					(-MAP_BACKGROUND_WIDTH - 30)
+
+
+/* Grey color box which serve as the background for the map image and the contracts menu */
+#define MAP_BACKGROUND	\
+		PREPROC_SHADER_DRAW( MAP_BG_X_START MAP_BG_Y_START MAP_BACKGROUND_WIDTH MAP_BACKGROUND_HEIGHT HORIZONTAL_ALIGN_RIGHT VERTICAL_ALIGN_CENTER, "white", BG_BACKCOLOR )
+		
+#define CHOICE_TAB_TEXTSIZE				TEXTSIZE_DEFAULT
+#define TAB_1_TEXT						(locString( "@MENU_TAB_MAP_CAPS" ))
+#define TAB_2_TEXT						(locString( "@MENU_TAB_CONTRACTS_CAPS" ))
+
+#define TAB_BG_PAD						5
+#define TAB_1_WIDTH						( getTextWidth( TAB_1_TEXT, CHOICE_TEXTFONT, CHOICE_TAB_TEXTSIZE ) + (TAB_BG_PAD*2) )
+#define TAB_2_WIDTH						( getTextWidth( TAB_2_TEXT, CHOICE_TEXTFONT, CHOICE_TAB_TEXTSIZE ) + (TAB_BG_PAD*2) )
+#define TAB_HEIGHT						18
+
+#define MAP_LIST_TAB_1_X				( MAP_BG_X_START + TAB_BG_PAD )
+#define MAP_LIST_TAB_2_X				( MAP_LIST_TAB_1_X + TAB_1_WIDTH )
+
+#define MAP_LIST_TAB_Y					( MAP_BG_Y_START - TAB_HEIGHT )
+
+#define MAP_HEADERSTEXT																						\
+		/* highlighted header */																			\
+		PREPROC_TEXT_DRAW_ADV_VIS_EX(	MAP_LIST_TAB_1_X,													\
+										MAP_LIST_TAB_Y,														\
+										TAB_1_WIDTH,														\
+										TAB_HEIGHT,															\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,						\
+										TAB_1_TEXT, CHOICE_TAB_TEXTSIZE, 0, 0, ITEM_ALIGN_MIDDLE_CENTER,	\
+										1 1 1 1,															\
+										when( dvarInt( showMap ) == 1 );, ; )								\
+		PREPROC_TEXT_DRAW_ADV_VIS_EX(	MAP_LIST_TAB_1_X,													\
+										MAP_LIST_TAB_Y,														\
+										TAB_1_WIDTH,														\
+										TAB_HEIGHT,															\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,						\
+										TAB_1_TEXT, CHOICE_TAB_TEXTSIZE, 0, 0, ITEM_ALIGN_MIDDLE_CENTER,	\
+										BACKGROUND_COLOR_GRAY_RGB .25,										\
+										when( dvarInt( showMap ) == 0 );, ; )								\
+		/* non highlighted header */																		\
+		PREPROC_TEXT_DRAW_ADV_VIS_EX(	MAP_LIST_TAB_2_X,													\
+										MAP_LIST_TAB_Y,														\
+										TAB_2_WIDTH,														\
+										TAB_HEIGHT,															\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,						\
+										TAB_2_TEXT, CHOICE_TAB_TEXTSIZE, 0, 0, ITEM_ALIGN_MIDDLE_CENTER,	\
+										1 1 1 1,															\
+										when( dvarInt( showMap ) == 0 && RANKEDGAME );, ; )					\
+		PREPROC_TEXT_DRAW_ADV_VIS_EX(	MAP_LIST_TAB_2_X,													\
+										MAP_LIST_TAB_Y,														\
+										TAB_2_WIDTH,														\
+										TAB_HEIGHT,															\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,						\
+										TAB_2_TEXT, CHOICE_TAB_TEXTSIZE, 0, 0, ITEM_ALIGN_MIDDLE_CENTER,	\
+										BACKGROUND_COLOR_GRAY_RGB .25,										\
+										when( dvarInt( showMap ) == 1 && RANKEDGAME );, ; )										
+
+#define MAP_LIST_TAB_1_ACTION	\
+	if( RANKEDGAME )			\
+	{							\
+		setDvar showMap 1;		\
+	}
+	
+#define MAP_LIST_TAB_2_ACTION	\
+	if( RANKEDGAME )			\
+	{							\
+		setDvar showMap 0;		\
+	}
+
+#define MAP_HEADERSBUTTONS																\
+		TAB_ACTION_BUTTON_ADV(			MAP_LIST_TAB_1_X,								\
+										MAP_LIST_TAB_Y,									\
+										TAB_1_WIDTH,									\
+										TAB_HEIGHT,										\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,	\
+										MAP_LIST_TAB_1_ACTION, when( dvarInt( showMap ) == 0 && RANKEDGAME );, ; )					\
+		TAB_ACTION_BUTTON_ADV(			MAP_LIST_TAB_2_X,								\
+										MAP_LIST_TAB_Y,									\
+										TAB_2_WIDTH,									\
+										TAB_HEIGHT,										\
+										HORIZONTAL_ALIGN_RIGHT, VERTICAL_ALIGN_CENTER,	\
+										MAP_LIST_TAB_2_ACTION, when( dvarInt( showMap ) == 1 && RANKEDGAME );, ; )					\
+	
+/* Tab for Map */
+#define MAP_TAB_1_BG																					\
+		itemDef																							\
+		{																								\
+			style           WINDOW_STYLE_SHADER_FRAMED													\
+			frame           5 0.5 FRAME_OPEN_BOTTOM														\
+			rect            0 MAP_LIST_TAB_Y 0 TAB_HEIGHT HORIZONTAL_ALIGN_RIGHT VERTICAL_ALIGN_CENTER	\
+			exp				rect X( MAP_LIST_TAB_1_X )													\
+			exp				rect W(	TAB_1_WIDTH )														\
+			background      "menu_mp_lobby_frame_circle"												\
+			forecolor       BG_BACKCOLOR																\
+			visible         when( dvarInt(showMap) == 1 );												\
+			decoration																					\
+		}
+
+/* Tab for contracts */
+#define MAP_TAB_2_BG																					\
+		itemDef																							\
+		{																								\
+			style           WINDOW_STYLE_SHADER_FRAMED													\
+			frame           5 0.5 FRAME_OPEN_BOTTOM														\
+			rect            0 MAP_LIST_TAB_Y 0 TAB_HEIGHT HORIZONTAL_ALIGN_RIGHT VERTICAL_ALIGN_CENTER	\
+			exp				rect X( MAP_LIST_TAB_2_X )													\
+			exp				rect W(	TAB_2_WIDTH )														\
+			background      "menu_mp_lobby_frame_circle"												\
+			forecolor       BG_BACKCOLOR																\
+			visible         when( dvarInt(showMap) == 0 && RANKEDGAME );								\
+			decoration																					\
+		}
+
+#define CREDITS( titleArg, rectAlignArg, textAlignArg, visArg )										\
+		itemDef																						\
+		{																							\
+			type			ITEM_TYPE_TEXT															\
+			rect			BUTTON_BG_X_START BUTTON_BG_Y_START BUTTON_BG_WIDTH 30 rectAlignArg		\
+			forecolor		COLOR_TITLE																\
+			exp				text( titleArg )														\
+			textfont		UI_FONT_DEFAULT															\
+			textscale		TEXTSIZE_DEFAULT														\
+			textstyle		ITEM_TEXTSTYLE_NORMAL													\
+			textalign		textAlignArg															\
+			visible			when( visArg );															\
+			decoration																				\
+		}	
+
+#define ADD_MAPBUTTON( index, row, column ) 														\
+	itemDef 																						\	
+		{ 																							\
+			rect                      0 0 166 118 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_SHADER 											\
+			borderSize                1 															\
+			forecolor                 0 0 0 0.4 													\
+			backColor                 0 0 0 0 														\
+			borderColor               0 0 0 0 														\
+			outlineColor              0 0 0 0 														\
+			background                "white"														\
+			exp             rect X ( 53  + ( (162 + 15)*row ) ) 									\
+        	exp             rect Y ( 117 + ( (112 + 30)*column ) ) 									\
+			visible 		when ( 1 ) 																\
+			decoration 																				\
+		}																							\
+	itemDef 																						\	
+		{ 																							\
+			rect                      0 0 166 118 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_SHADER 											\
+			borderSize                1 															\
+			forecolor                 0 1 0.4 0.3 													\
+			backColor                 0 0 0 0 														\
+			borderColor               0 0 0 0 														\
+			outlineColor              0 0 0 0 														\
+			background                "white"														\
+			exp             rect X ( 53  + ( (162 + 15)*row ) ) 									\
+        	exp             rect Y ( 117 + ( (112 + 30)*column ) ) 									\
+			visible 		when ( localvarint("ui_current") == index ) 							\
+			decoration 																				\
+		}																							\
+	itemDef   														 								\
+		{  														 									\
+			style			WINDOW_STYLE_SHADER											 			\
+			type			ITEM_TYPE_IMAGE															\
+			rect			0 0 162 112 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 				\
+			border			0 																		\
+			bordercolor		.5 .5 .5 .5 															\
+			origin			0 0 																	\
+			exp				material( (dvarstring("map" + index)) ) 								\
+			exp             rect X ( 55  + ( (162 + 15)*row ) ) 									\
+        	exp             rect Y ( 119 + ( (112 + 30)*column ) ) 									\
+			visible			when( 1 ) 																\
+			decoration 																				\
+		} 																							\
+	itemDef   														 								\
+		{  														 									\
+			type			ITEM_TYPE_BUTTON														\
+			rect			0 0 162 112 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 				\
+			border			0 																		\
+			bordercolor		.5 .5 .5 .5 															\
+			origin			0 0 																	\
+			exp             rect X ( 55  + ( (162 + 15)*row ) ) 									\
+        	exp             rect Y ( 119 + ( (112 + 30)*column ) ) 									\
+			visible			when( 1 ) 																\																				\
+			onFocus  																				\
+			{ 																						\
+				setLocalVarInt "ui_current" index													\
+				play CHOICE_FOCUS_SOUND 															\
+			} 																						\
+			mouseEnter  																			\
+			{ 																						\
+				setLocalVarInt "ui_current" index 													\
+				play CHOICE_FOCUS_SOUND																\
+			} 																						\
+			action 																					\
+			{ 																						\
+				setLocalVarInt "ui_selected" index  												\		
+				scriptMenuResponse index 															\
+				play CHOICE_FOCUS_SOUND 															\
+			} 																						\
+		} 																							\
+	itemDef 																						\	
+		{ 																							\
+			rect                      0 0 162 112 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_SHADER 											\
+			borderSize                1 															\
+			forecolor                 0 1 0.4 0.3 													\
+			backColor                 0 0 0 0 														\
+			borderColor               0 0 0 0 														\
+			outlineColor              0 0 0 0 														\
+			background                "white"														\
+			exp             rect X ( 55  + ( (162 + 15)*row ) ) 									\
+        	exp             rect Y ( 119 + ( (112 + 30)*column ) ) 									\
+			visible 		when ( localvarint("ui_selected") == index ) 							\
+			decoration 																				\
+		}																							\
+	itemDef 																						\
+		{ 																							\
+			type 					  ITEM_TYPE_TEXT 												\
+			rect                      0 0 162 20 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_FILLED 											\
+			borderSize                1 															\
+			foreColor                 1 1 1 1 														\
+			backColor                 0 0 0 0.8 													\
+			borderColor               0 0 0 0 														\
+			outlineColor              0 0 0 0 														\
+			textFont                  UI_FONT_NORMAL												\
+			textAlign                 ITEM_ALIGN_LEGACY_CENTER 										\
+			textAlignY                18 															\
+			textScale                 0.30 															\
+			textStyle                 9 															\
+			exp                       text ( ( dvarstring( "mapgametype"+index ) ) )				\
+			exp                       rect X ( ( 55 + ( (162+15)*row ) ) )							\ 
+			exp                       rect Y ( ( 119 + ( (112 + 30)*column ) ) ) 					\
+			visible when ( dvarint( "mv_randomgametypeenable" ) == 1 ) 								\                
+			decoration																				\                
+		} 																							\
+	itemDef	 																						\
+		{ 																							\
+			type 					  ITEM_TYPE_TEXT 												\
+			rect                      0 0 162 20 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_FILLED 											\
+			borderSize                1 															\
+			foreColor                 1 1 1 1 														\
+			backColor                 0 0 0 0.8 													\
+			borderColor               0 0 0 0 														\
+			outlineColor              0 0 0 0 														\
+			textFont                  UI_FONT_NORMAL 												\
+			textAlign                 ITEM_ALIGN_LEGACY_CENTER 										\
+			textAlignY                18 															\
+			textScale                 0.30 															\
+			textStyle                 9 															\
+			exp                       text ( ( dvarstring( "mapname"+index) ) ) 					\
+			exp                       rect X ( ( 55 + ( (162+15)*row ) ) ) 							\ 
+			exp                       rect Y ( ( 119 + 94 + ( (112 + 30)*column ) ) ) 				\
+			visible 1 																				\                
+			decoration 																				\                
+		} 																							\
+	itemDef 																						\
+		{ 																							\
+			type 					  ITEM_TYPE_TEXT 												\
+			rect                      0 0 162 20 HORIZONTAL_ALIGN_SUBLEFT VERTICAL_ALIGN_SUBTOP 	\
+			style                     WINDOW_STYLE_FILLED 											\
+			borderSize                1 															\
+			foreColor                 1 1 1 1 														\
+			textFont                  UI_FONT_NORMAL 												\
+			textAlign                 ITEM_ALIGN_RIGHT 												\
+			textAlignY                18 															\
+			textScale                 0.30 															\
+			textStyle                 9 															\
+			exp                       text ( ( dvarstring( "mapvotes"+index ) ) ) 					\
+			exp                       rect X ( ( 55 + ( (162+15)*row ) ) )							\ 
+			exp                       rect Y ( ( 119 + 94 + ( (112 + 30)*column ) ) ) 				\
+			visible 1	 																			\    
+			decoration 																				\                         
+		} 																							\
+	
+
+{
+	menuDef
+	{
+		name			"mapvote" // @DoktorSAS
+		focuscolor		COLOR_FOCUSED
+		style			WINDOW_STYLE_EMPTY
+
+		#ifdef CONSOLE
+			rect			0 0 640 480 HORIZONTAL_ALIGN_FULLSCREEN VERTICAL_ALIGN_FULLSCREEN
+			blurWorld		7.0
+		#else
+			rect			0 0 640 480 HORIZONTAL_ALIGN_FULLSCREEN VERTICAL_ALIGN_FULLSCREEN
+		#endif
+
+		//#define SINGLE_PLAYER	1
+		//#include "ui_mp/ingamebg.inc"
+		#include "ui/safearea.menu"
+		
+		onOpen
+		{
+			focusFirst;
+			setLocalVarInt "ui_current" 0;
+            setLocalVarInt "ui_selected" -1;
+			showMenu "pausedbkgnd";
+			showMenu self;
+		}
+		onFocus
+		{
+			focusFirst;
+		}
+        onEsc
+        {
+
+        }
+
+		CHOICE_MENU_TITLE_ALIGN_VIS( "Mapvote Menu", HORIZONTAL_ALIGN_LEFT VERTICAL_ALIGN_TOP, ITEM_ALIGN_MIDDLE_LEFT, 1 )
+
+		#undef	BUTTON_BG_Y_START	
+		#define	BUTTON_BG_Y_START				60
+		CREDITS( "Developed by @DoktorSAS", HORIZONTAL_ALIGN_LEFT VERTICAL_ALIGN_TOP, ITEM_ALIGN_MIDDLE_LEFT, 1 )
+
+		#undef	BUTTON_BG_Y_START	
+		#define	BUTTON_BG_Y_START				55
+		#undef	BUTTON_BG_X_START	
+		#define	BUTTON_BG_X_START				70
+		itemDef																						
+		{																							
+			type			ITEM_TYPE_TEXT															
+			rect			BUTTON_BG_X_START BUTTON_BG_Y_START BUTTON_BG_WIDTH 30 HORIZONTAL_ALIGN_CENTER VERTICAL_ALIGN_TOP	
+			forecolor		COLOR_TITLE																
+			exp				text( dvarstring("votetime") )														
+			textfont		UI_FONT_NORMAL															
+			textscale		TEXTSIZE_SUBTITLE														
+			textstyle		ITEM_TEXTSTYLE_NORMAL														
+			textalign		ITEM_ALIGN_MIDDLE_RIGHT													
+			visible			when( 1 )													
+			decoration																				
+		}	
+
+		#undef	BUTTON_BG_X_START	
+		#define	BUTTON_BG_X_START				50
+
+		#undef	BUTTON_BG_Y_START	
+		#define	BUTTON_BG_Y_START				90
+
+		ADD_MAPBUTTON(1, 0, 0 )
+		ADD_MAPBUTTON(2, 1, 0 )
+		ADD_MAPBUTTON(3, 2, 0 )
+		ADD_MAPBUTTON(4, 0, 1 )
+		ADD_MAPBUTTON(5, 1, 1 )
+		ADD_MAPBUTTON(6, 2, 1 )
+	}
+}
