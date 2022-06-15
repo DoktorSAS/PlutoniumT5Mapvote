@@ -5,6 +5,13 @@
 /*
     Plutonium T5 Mapvote
     Developed by DoktorSAS
+    set mv_enable 1 // Enable/Disable the mapvote
+    
+    set mv_maps "mp_array mp_cracked mp_crisis mp_firingrange mp_duga mp_hanoi mp_cairo mp_havoc mp_cosmodrome mp_nuked mp_radiation mp_mountain mp_villa mp_russianbase" // Lits of maps that can be voted on the mapvote, leave empty for all maps
+    set mv_time 20 // Time to vote
+    set mv_randomgametypeenable 0 // Enable/Disable random gametypes
+    set mv_gametypefiles "@@" // Gametypes cfg configuration filenames
+    set mv_gametypes "dm@tdm@sd"  // Gametypes ui names
 */
 
 init()
@@ -12,9 +19,9 @@ init()
     game["mapvote"] = "mapvote";
     preCacheMenu(game["mapvote"]);
 
-    //SetDvarIfNotInizialized("mv_enable", 1);
-    //if(!getDvarInt("mv_enable"))
-    //    return;
+    setDvarIfNotInizialized("mv_enable", 1);
+    if(!getDvarInt("mv_enable"))
+        return;
     print("Mapvote loaded...");
     print("Developed by @DoktorSAS");
 
@@ -28,7 +35,7 @@ init()
     // DLC ONLY
     //SetDvarIfNotInizialized("mv_maps", "mp_berlinwall2 mp_discovery mp_kowloon mp_stadium mp_gridlock mp_hotel mp_outskirts mp_zoo mp_drivein mp_area51 mp_golfcourse mp_silo");
     
-    SetDvarIfNotInizialized("mv_gametypefiles", "dm@sd@tdm");
+    SetDvarIfNotInizialized("mv_gametypefiles", "@@");
     SetDvarIfNotInizialized("mv_gametypes", "dm@sd@tdm");
     SetDvarIfNotInizialized("mv_randomgametypeenable", 1);
 
@@ -112,10 +119,12 @@ mapvote()
     {
         gametypeslist = strTok(getDvar("mv_gametypes"), "@");
         gametypefiles = strTok(getDvar("mv_gametypefiles"), "@");
-        
-        setDvar("g_gametype", gametypeslist[winner]);
-        if(gametypefiles[winner] != "")
-            execute = "exec " + gametypefiles[winner] + ".cfg";
+        index = gametypes[winner];
+        setDvar("winner", winner);
+        setDvar("next_g", gametypeslist[index]);
+        setDvar("g_gametype", gametypeslist[index]);
+        if(gametypefiles[index] != "")
+            execute = "exec " + gametypefiles[index] + ".cfg";
     }
     setDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
     setDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
@@ -136,22 +145,16 @@ managegametypenames()
     gametypes[0] = -1;
 
     gametypes[1] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid1", gametypeslist[ gametypes[1] ] );
     setDvar("mapgametype1", gametypeToName( gametypeslist[ gametypes[1] ] ) );
     gametypes[2] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid2", gametypeslist[ gametypes[2] ] );
     setDvar("mapgametype2", gametypeToName( gametypeslist[ gametypes[2] ] ) );
     gametypes[3] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid3", gametypeslist[ gametypes[3] ] );
     setDvar("mapgametype3", gametypeToName( gametypeslist[ gametypes[3] ] ) );
     gametypes[4] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid4", gametypeslist[ gametypes[4] ] );
     setDvar("mapgametype4", gametypeToName( gametypeslist[ gametypes[4] ] ) );
     gametypes[5] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid5", gametypeslist[ gametypes[5] ] );
     setDvar("mapgametype5", gametypeToName( gametypeslist[ gametypes[5] ] ) );
     gametypes[6] = randomIntRange(0, gametypeslist.size);
-    //setDvar("mapgametypeid6", gametypeslist[ gametypes[6] ] );
     setDvar("mapgametype6", gametypeToName( gametypeslist[ gametypes[6] ] ) );
 
     return gametypes;
@@ -392,7 +395,6 @@ mapvoteEndGame( winner, endReasonText )
     
     SetMatchTalkFlag( "EveryoneHearsEveryone", 1 );
     
-    wait 2;
     mapvote();
     
     players = level.players;
