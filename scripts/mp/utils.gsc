@@ -47,19 +47,19 @@ getmapname(map) {
     case "mp_cracked": return "CRACKED";
     case "mp_crisis": return "CRISIS";
     case "mp_firingrange": return "FIRINGRANGE";
-    case "mp_duga": return "DUGA";
+    case "mp_duga": return "GRID";
     case "mp_hanoi": return "HANOI";
-    case "mp_havoc": return "HAVOC";
-    case "mp_cairo": return "CAIRO";
-    case "mp_cosmodrome": return "COSMODROME";
-    case "mp_nuked": return "NUKED";
+    case "mp_havoc": return "JUNGLE";
+    case "mp_cairo": return "HAVANA";
+    case "mp_cosmodrome": return "LAUNCH";
+    case "mp_nuked": return "NUKETOWN";
     case "mp_radiation": return "RADIATION";
-    case "mp_mountain": return "MOUNTAIN";
+    case "mp_mountain": return "SUMMIT";
     case "mp_villa": return "VILLA";
-    case "mp_russianbase": return "RUSSIANBASE";
+    case "mp_russianbase": return "WMD";
     
     // DLC 1
-    case "mp_berlinwall2": return "BERLINWALL";
+    case "mp_berlinwall2": return "BERLIN WALL";
     case "mp_discovery": return "DISCOVERY";
     case "mp_kowloon": return "KOWLOON";
     case "mp_stadium": return "STADIUM";
@@ -71,9 +71,9 @@ getmapname(map) {
     case "mp_zoo": return "ZOO";
     
     // DLC 3
-    case "mp_drivein": return "DRIVEIN";
-    case "mp_area51": return "AREA51";
-    case "mp_golfcourse": return "GOLFCOURSE";
+    case "mp_drivein": return "DRIVE-IN";
+    case "mp_area51": return "HANGER 18";
+    case "mp_golfcourse": return "HAZARD";
     case "mp_silo": return "SILO";
     
     /*
@@ -146,4 +146,44 @@ getmostvotedmap()
         }
     }
     return winner;
+}
+gametypeToName(gametype)
+{
+	switch (tolower(gametype))
+	{
+	case "dm":
+		return "Free for all";
+
+	case "tdm":
+		return "Team Deathmatch";
+
+	case "sd":
+		return "Search & Destroy";
+
+	case "ctf":
+		return "Capture the Flag";
+
+	case "dom":
+		return "Domination";
+
+	case "dem":
+		return "Demolition";
+
+	case "gun":
+		return "Gun Game";
+
+	case "koth":
+		return "Headquaters";
+
+	case "oic":
+		return "One in the chamber";
+
+	case "sas":
+		return "Sticks & Stones";
+
+	case "shrp":
+		return "Sharpshooter";
+
+	}
+	return "invalid";
 }
