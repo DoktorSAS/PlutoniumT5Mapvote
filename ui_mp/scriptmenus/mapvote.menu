@@ -449,5 +449,7 @@
 		ADD_MAPBUTTON(4, 0, 1 )
 		ADD_MAPBUTTON(5, 1, 1 )
 		ADD_MAPBUTTON(6, 2, 1 )
+		
+		// Developed by @DoktorSAS
 	}
 }
