@@ -21,11 +21,10 @@
 
  × How to setup the mapvote step by step
 
- 1) Compile the mod with the zonetool 
+ 1) Compile the mod with the black ops mod tool 
  2) Copy the Compiled mod.ff file in your Directory %localappdata%\Plutonium\storage\t5\mods\YOURMODNAME (Exemple: ..\mods\mp_mapvote, ..\mods\funserver)
- 3) Create the .iwd file with .iwi images in the images folder and put in in your Directory %localappdata%\Plutonium\storage\iw5\mods\YOURMODNAME (Exemple: ..\mods\mp_mapvote, ..\mods\funserver)
- 4) Copy the Content of the mapvote.cfg in your .cfg (Exemple: server.cfg, dedicated_mp.cfg, dedicated.cfg, etc ) file that manages the Server.
- 5) Edit the Dvars to setup the Server, many Dvars are only for Aesthetic Parameters.
+ 3) Copy the Content of the mapvote.cfg in your .cfg (Exemple: server.cfg, dedicated_mp.cfg, dedicated.cfg, etc ) file that manages the Server.
+ 4) Edit the Dvars to setup the Server, many Dvars are only for Aesthetic Parameters.
     set the Dvar mv_maps to decide the maps that will be shown in mapvote, Example:
         set mv_maps "mp_array mp_cracked mp_crisis mp_firingrange mp_duga mp_hanoi mp_cairo mp_havoc mp_cosmodrome mp_nuked mp_radiation mp_mountain mp_villa mp_russianbase"
     set the dvar mv_enable to 1 if you want have it active on your server.
