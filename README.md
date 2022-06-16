@@ -17,9 +17,10 @@ Developed by [@DoktorSAS](https://twitter.com/DoktorSAS)
 
 ### How to setup the mapvote step by step
 
- 1) Copy the Compiled mod.ff file in your Directory %localappdata%\Plutonium\storage\t5\mods\YOURMODNAME (Exemple: ..\mods\mp_mapvote, ..\mods\funserver)
- 2) Copy the Content of the mapvote.cfg in your .cfg (Exemple: server.cfg, dedicated_mp.cfg, dedicated.cfg, etc ) file that manages the Server.
- 3) Edit the Dvars to setup the Server, many Dvars are only for Aesthetic Parameters.
+ 1) Compile the mod with the black ops mod tool
+ 2) Copy the Compiled mod.ff file in your Directory %localappdata%\Plutonium\storage\t5\mods\YOURMODNAME (Exemple: ..\mods\mp_mapvote, ..\mods\funserver)
+ 3) Copy the Content of the mapvote.cfg in your .cfg (Exemple: server.cfg, dedicated_mp.cfg, dedicated.cfg, etc ) file that manages the Server.
+ 4) Edit the Dvars to setup the Server, many Dvars are only for Aesthetic Parameters.
     - set the Dvar mv_maps to decide the maps that will be shown in mapvote, Example:
         - set mv_maps "mp_array mp_cracked mp_crisis mp_firingrange mp_duga mp_hanoi mp_cairo mp_havoc mp_cosmodrome mp_nuked mp_radiation mp_mountain mp_villa mp_russianbase"
     - set the dvar mv_enable to 1 if you want have it active on your server.
@@ -30,8 +31,8 @@ Developed by [@DoktorSAS](https://twitter.com/DoktorSAS)
     
     mv_gametypefiles and mv_gametypes must have the same number of @ symbols. The elements on mv_gametypefiles  
     are linked to the element in mv_gametypenames
- 4) Copy the mapvote.gsc and put it %localappdata%\Plutonium\storage\iw5\scripts\
- 5) Run the Server and have fun. Done!
+ 5) Copy the mapvote.gsc and put it %localappdata%\Plutonium\storage\iw5\scripts\
+ 6) Run the Server and have fun. Done!
 
 ## How to add custom maps to the mapvote list
   1) Create a new material file for the preview [Not mandatory]
