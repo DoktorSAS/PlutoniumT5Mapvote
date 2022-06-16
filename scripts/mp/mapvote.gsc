@@ -78,7 +78,7 @@ mapvote()
     maps = [];
     maps = strTok( getDvar("mv_maps"), " ");
 
-    setDvar("votetime", "00:00");
+    setUIDvar("votetime", "00:00");
     value = "0/" + int(num_of_bots()/2+1);
      
     for(i = 1; i <= 6;i++)
@@ -88,13 +88,13 @@ mapvote()
         index = randomIntRange(0, maps.size);
         map = maps[ index ];
         map_preview = "loadscreen_" + map;
-        setDvar( dvar, map_preview );
-        setDvar( dvarname, getmapname(map) );
+        setUIDvar( dvar, map_preview );
+        setUIDvar( dvarname, getmapname(map) );
         maps = ArrayRemoveIndex(maps, index);
 
         // Reset UI votes
         dvar = "mapvotes" + i;
-        setDvar( dvar, value );
+        setUIDvar( dvar, value );
     }
 
     for(i = 0; i < level.players.size; i++)
@@ -120,16 +120,21 @@ mapvote()
         gametypeslist = strTok(getDvar("mv_gametypes"), "@");
         gametypefiles = strTok(getDvar("mv_gametypefiles"), "@");
         index = gametypes[winner];
-        setDvar("winner", winner);
-        setDvar("next_g", gametypeslist[index]);
-        setDvar("g_gametype", gametypeslist[index]);
+        setUIDvar("g_gametype", gametypeslist[index]);
         if(gametypefiles[index] != "")
             execute = "exec " + gametypefiles[index] + ".cfg";
     }
-    setDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
-    setDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    setUIDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    setUIDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
     if( !level.istimeexpired )
         wait 5;
+}
+setUIDvar(dvar, value)
+{
+    setDvar(dvar, value);
+    for(i = 0; i < level.players.size; i++)
+        if( !level.players[ i ] is_a_bot() )
+            level.players[ i ] setClientDvar( dvar, value );
 }
 
 managegametypenames()
@@ -145,17 +150,17 @@ managegametypenames()
     gametypes[0] = -1;
 
     gametypes[1] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype1", gametypeToName( gametypeslist[ gametypes[1] ] ) );
+    setUIDvar("mapgametype1", gametypeToName( gametypeslist[ gametypes[1] ] ) );
     gametypes[2] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype2", gametypeToName( gametypeslist[ gametypes[2] ] ) );
+    setUIDvar("mapgametype2", gametypeToName( gametypeslist[ gametypes[2] ] ) );
     gametypes[3] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype3", gametypeToName( gametypeslist[ gametypes[3] ] ) );
+    setUIDvar("mapgametype3", gametypeToName( gametypeslist[ gametypes[3] ] ) );
     gametypes[4] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype4", gametypeToName( gametypeslist[ gametypes[4] ] ) );
+    setUIDvar("mapgametype4", gametypeToName( gametypeslist[ gametypes[4] ] ) );
     gametypes[5] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype5", gametypeToName( gametypeslist[ gametypes[5] ] ) );
+    setUIDvar("mapgametype5", gametypeToName( gametypeslist[ gametypes[5] ] ) );
     gametypes[6] = randomIntRange(0, gametypeslist.size);
-    setDvar("mapgametype6", gametypeToName( gametypeslist[ gametypes[6] ] ) );
+    setUIDvar("mapgametype6", gametypeToName( gametypeslist[ gametypes[6] ] ) );
 
     return gametypes;
 
@@ -211,7 +216,7 @@ managetime()
             strtime = strtime + "" + seconds;
         }  
         
-        setDvar("votetime", strtime);   
+        setUIDvar("votetime", strtime);   
         
         wait 1;
         time--;
@@ -234,11 +239,11 @@ managevotes()
             }
             value = votes + "/" + int(num_of_bots()/2+1);
             if( getDvar(dvar) != value )
-                setDvar( dvar, value );
+                setUIDvar( dvar, value );
             
             if(votes >= int(num_of_bots()/2+1))
             {
-                setDvar("votetime", "00:00");
+                setUIDvar("votetime", "00:00");
                 level notify("mapvote_done", getmostvotedmap()+1);
                 return;
             }
@@ -286,6 +291,9 @@ onMenuResponse()
 
 main()
 {
+    setDvarIfNotInizialized("mv_enable", 1);
+    if(!getDvarInt("mv_enable"))
+        return;
     replaceFunc(maps\mp\gametypes\_globallogic::endgame, ::mapvoteEndGame);
 }
 
@@ -308,7 +316,7 @@ mapvoteEndGame( winner, endReasonText )
     game["state"] = "postgame";
     level.gameEndTime = getTime();
     level.gameEnded = true;
-    SetDvar( "g_gameEnded", 1 );
+    setUIDvar( "g_gameEnded", 1 );
     level.inGracePeriod = false;
     level notify ( "game_ended" );
     level.allowBattleChatter = false;
