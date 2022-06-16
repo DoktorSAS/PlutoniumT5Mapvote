@@ -6,7 +6,7 @@ Developed by [@DoktorSAS](https://twitter.com/DoktorSAS)
  - [How to add custom maps to the mapvote list](#how-to-add-custom-maps-to-the-mapvote-list)
 
 ### Preview
-![preview](https://pbs.twimg.com/media/FU1ygnhWYAEXUfP?format=jpg&name=large)
+[![preview](https://pbs.twimg.com/media/FU1ygnhWYAEXUfP?format=jpg&name=large)](https://www.youtube.com/watch?v=UquGVnZljdc)
 
 
 ### Requirements
