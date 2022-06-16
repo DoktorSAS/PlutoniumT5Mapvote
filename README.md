@@ -31,7 +31,7 @@ Developed by [@DoktorSAS](https://twitter.com/DoktorSAS)
     
     mv_gametypefiles and mv_gametypes must have the same number of @ symbols. The elements on mv_gametypefiles  
     are linked to the element in mv_gametypenames
- 5) Copy the mapvote.gsc and put it %localappdata%\Plutonium\storage\iw5\scripts\
+ 5) Copy the mapvote.gsc and put it %localappdata%\Plutonium\storage\t5\scripts\
  6) Run the Server and have fun. Done!
 
 ## How to add custom maps to the mapvote list
