@@ -35,7 +35,7 @@ init()
     // DLC ONLY
     //SetDvarIfNotInizialized("mv_maps", "mp_berlinwall2 mp_discovery mp_kowloon mp_stadium mp_gridlock mp_hotel mp_outskirts mp_zoo mp_drivein mp_area51 mp_golfcourse mp_silo");
     
-    SetDvarIfNotInizialized("mv_gametypefiles", "@@");
+    SetDvarIfNotInizialized("mv_gametypefiles", "dm@sd@tdm");
     SetDvarIfNotInizialized("mv_gametypes", "dm@sd@tdm");
     SetDvarIfNotInizialized("mv_randomgametypeenable", 1);
 
@@ -112,20 +112,26 @@ mapvote()
     gametypes = [];
     gametypes = managegametypenames(); // Manage gametype on screen
 
-    level waittill("mapvote_done", winner);
+    level waittill("mapvote_done", winner); // winner is the index (the element at i = 0 is always empty)
 
     execute = "";
-    if( gametypes.size > 0)
+    gametype_index = gametypes[winner];
+    setDvar("sv_maprotation", "");
+    setDvar("sv_maprotationcurrent", "");
+    
+    if(gametypes.size > 0)
     {
         gametypeslist = strTok(getDvar("mv_gametypes"), "@");
-        gametypefiles = strTok(getDvar("mv_gametypefiles"), "@");
-        index = gametypes[winner];
-        setUIDvar("g_gametype", gametypeslist[index]);
-        if(gametypefiles[index] != "")
-            execute = "exec " + gametypefiles[index] + ".cfg";
+        setDvar("g_gametype", gametypeslist[gametype_index]);
     }
-    setUIDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
-    setUIDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    
+    if(gametypes.size > 0)
+    {
+        gametypefiles = strTok(getDvar("mv_gametypefiles"), "@");
+        execute = "exec " + gametypefiles[gametype_index] + " ";
+    }
+    setDvar("sv_maprotation", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
+    setDvar("sv_maprotationcurrent", execute + "map " + mapimgtomapid( getDvar("map" + winner) ) );
     if( !level.istimeexpired )
         wait 5;
 }
